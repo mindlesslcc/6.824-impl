@@ -1,0 +1,15 @@
+syntax="proto3";
+import "kv.proto";
+package proto;
+
+message MapRequest {
+    string content = 1;
+}
+
+message MapResponse {
+    repeated KeyValue kvs = 1;
+}
+
+service Work {
+    rpc Map(MapRequest) returns(MapResponse);
+}

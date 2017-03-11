@@ -1,0 +1,8 @@
+syntax="proto3";
+
+package proto;
+
+message KeyValue {
+    string Key = 1;
+    string Value = 2;
+}
