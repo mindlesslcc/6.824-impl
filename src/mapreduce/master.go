@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"net"
+	"sync"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -24,14 +25,16 @@ type Master struct {
 	nWorker int
 	workerDone chan bool
 	workers []*WorkerInfo
+	wg sync.WaitGroup
 }
 
 var m Master
 
-func (m *Master)Init() {
+func (m *Master)Init(wg sync.WaitGroup) {
 	m.ip = MASTER_IP
 	m.port = MASTER_PORT
 	m.nWorker = 0
+	m.wg = wg
 	m.workers = make([]*WorkerInfo, 10)
 	fmt.Println("Master Init OK!")
 }
@@ -56,6 +59,9 @@ func (m *Master) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 		return &pb.RegisterResponse{Result:false}, nil
 	} else {
 		m.workers = append(m.workers, w)
+		fmt.Printf("register worker %s:%d  %d\n", in.Ip, in.Port, len(m.workers))
+		m.wg.Add(-1)
+		fmt.Println("hehe")
 		return &pb.RegisterResponse{Result:true}, nil
 	}
 }
