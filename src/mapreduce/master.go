@@ -68,6 +68,7 @@ func (m *Master) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 func (m *Master) Reduce(ctx context.Context, in *pb.ReduceRequest) (*pb.ReduceResponse, error) {
 	//wait for map report
 	//print reduce result
+	Reduce()
 	m.wg.Add(-1)
 	if len(m.workers) == 0 {
 		//do reduce
