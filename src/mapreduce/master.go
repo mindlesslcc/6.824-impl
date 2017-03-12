@@ -5,6 +5,7 @@ import (
 	"os"
 	"net"
 	"sync"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -59,8 +60,6 @@ func (m *Master) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 		return &pb.RegisterResponse{Result:false}, nil
 	} else {
 		m.workers = append(m.workers, w)
-		fmt.Printf("register worker %s:%d  %d\n", in.Ip, in.Port, len(m.workers))
-		m.wg.Add(-1)
 		fmt.Println("hehe")
 		return &pb.RegisterResponse{Result:true}, nil
 	}
@@ -69,7 +68,27 @@ func (m *Master) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 func (m *Master) Reduce(ctx context.Context, in *pb.ReduceRequest) (*pb.ReduceResponse, error) {
 	//wait for map report
 	//print reduce result
+	m.wg.Add(-1)
+	if len(m.workers) == 0 {
+		//do reduce
+		m.wg.Add(-1)
+	}
 	return &pb.ReduceResponse{}, nil
+}
+
+func masterPeriod() {
+	fmt.Println("master period function")
+}
+
+func masterTimerFunc() {
+	timer := time.NewTimer(time.Second * 10)
+	for {
+		select {
+			case <- timer.C:
+				masterPeriod()
+				timer.Reset(time.Second * 10)
+		}
+	}
 }
 
 // startBlockServer start blockserver (rpc)
@@ -87,6 +106,7 @@ func startMaster() {
 		fmt.Printf("failed to serve: %v", err)
 		os.Exit(1)
 	}
+	go masterTimerFunc()
 }
 
 func (m *Master)Start() {

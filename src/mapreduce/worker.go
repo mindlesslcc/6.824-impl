@@ -33,6 +33,19 @@ func (w *Worker)register(c pb.MasterClient) error {
 	return err
 }
 
+// call master to reduce
+func (w *Worker)reduce(c pb.MasterClient) error {
+	reduceRequest := &pb.ReduceRequest{
+	}
+	r, err := c.Reduce(context.Background(), reduceRequest)
+	if err != nil {
+		fmt.Printf("could not reduce: %v", err)
+		os.Exit(1)
+	}
+	fmt.Println(r)
+	return err
+}
+
 func (w *Worker)Start() {
 	//connect to master
 	conn, err := grpc.Dial(MASTER_ADDRESS, grpc.WithInsecure())
@@ -46,6 +59,12 @@ func (w *Worker)Start() {
 	if err != nil {
 		fmt.Printf("blockServer register error %s\n", err)
 		os.Exit(1)
+	} else {
+		Map()
+		err = w.reduce(c)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 

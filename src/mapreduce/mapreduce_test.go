@@ -17,6 +17,7 @@ func Test(t *testing.T) {
 	wk2.Init("127.0.0.1", 20002)
 	wk3.Init("127.0.0.1", 20003)
 	//start mapreduce
+	wg.Add(1)
 	m.Start()
 	wg.Add(3)
 	go wk1.Start()
