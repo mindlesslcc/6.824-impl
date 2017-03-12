@@ -12,11 +12,18 @@ import (
 	pb "proto"
 )
 
+type WorkerInfo struct {
+	ip string
+	port int
+	state int
+}
+
 type Master struct {
 	ip string
 	port int
 	nWorker int
 	workerDone chan bool
+	workers []*WorkerInfo
 }
 
 var m Master
@@ -25,11 +32,32 @@ func (m *Master)Init() {
 	m.ip = MASTER_IP
 	m.port = MASTER_PORT
 	m.nWorker = 0
+	m.workers = make([]*WorkerInfo, 10)
 	fmt.Println("Master Init OK!")
 }
 
+func (m *Master) existWorker(worker *WorkerInfo) bool {
+	for _, value := range m.workers {
+		if value.ip == worker.ip && value.port == worker.port {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *Master) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	return &pb.RegisterResponse{}, nil
+	w := &WorkerInfo{
+		ip		:in.Ip,
+		port	:int(in.Port),
+		state	:WORKER_STATE_CONNECTED,
+	}
+	//check exist or not
+	if m.existWorker(w) {
+		return &pb.RegisterResponse{Result:false}, nil
+	} else {
+		m.workers = append(m.workers, w)
+		return &pb.RegisterResponse{Result:true}, nil
+	}
 }
 
 func (m *Master) Reduce(ctx context.Context, in *pb.ReduceRequest) (*pb.ReduceResponse, error) {
